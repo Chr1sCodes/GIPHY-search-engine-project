@@ -13,7 +13,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open http://localhost:3000. The supplied development environment already has a local `.env`. Never commit it. The API key stays on the server; the browser uses `/api/giphy`.
+Open http://localhost:3000. Keep `.env` out of version control. The API key stays on the server; the browser uses `/api/giphy`.
 
 ```sh
 npm run build

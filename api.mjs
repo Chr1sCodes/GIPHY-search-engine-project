@@ -6,7 +6,10 @@ export function buildGiphyUrl(requestUrl, apiKey) {
   const offset = Number.isSafeInteger(rawOffset) && rawOffset >= 0 ? Math.min(rawOffset, 4999) : 0;
   const url = new URL(`https://api.giphy.com/v1/${type}/${query ? 'search' : 'trending'}`);
   url.search = new URLSearchParams({
-    api_key: apiKey, limit: '24', offset: String(offset), rating: 'pg-13',
+    api_key: apiKey,
+    limit: '24',
+    offset: String(offset),
+    rating: 'pg-13',
     ...(query ? { q: query, lang: 'en' } : {}),
   }).toString();
   return url;
@@ -28,7 +31,10 @@ export async function fetchGiphy(requestUrl, apiKey) {
     const data = await response.json();
     return { status: 200, body: data };
   } catch (error) {
-    console.error('GIPHY request failed:', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      'GIPHY request failed:',
+      error instanceof Error ? error.message : 'Unknown error',
+    );
     return { status: 502, body: { error: 'Unable to reach GIPHY. Please check your connection and try again.' } };
   }
 }
