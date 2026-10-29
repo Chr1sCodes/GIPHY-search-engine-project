@@ -22,3 +22,9 @@ npm test
 ```
 
 Images are GIPHY GIF still frames, not a separate stock-photo search. All upstream requests use a PG-13 rating ceiling. Favorites are saved to this browser, not an account. A valid GIPHY API key with access to trending and search endpoints is required; API authorization and rate-limit errors appear explicitly in the app.
+
+Christine Bharosi
+Loop is a website where you can find GIFs and images by searching for keywords. It uses the GIPHY API to retrieve relevant media.
+Users have the option to make an account for easier access. The search bar is readily available and will provide relevant GIFs and images based on the keywords used in the search bar.
+Technologies used: Javascript, Node.js, HTML, api.mjs.
+Ideas for improvement: Connected backend for account creation, mobile access, and subscription service structure.
