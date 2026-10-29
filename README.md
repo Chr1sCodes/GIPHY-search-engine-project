@@ -9,11 +9,11 @@ Requires Node.js 22.9 or later.
 ```sh
 npm install
 cp .env.example .env
-# Put your private GIPHY_API_KEY in .env.local (it overrides .env and is ignored by Git)
+# Set GIPHY_API_KEY in .env
 npm run dev
 ```
 
-Open http://localhost:3000. Keep `.env` and `.env.local` out of version control. The API key stays on the Node server; the browser calls the server proxy at `/api/giphy` and never receives the key.
+Open http://localhost:3000. Keep `.env` out of version control. The API key stays on the server; the browser uses `/api/giphy`.
 
 ```sh
 npm run build
@@ -36,4 +36,4 @@ GitHub Pages hosts static files only, so search also needs a separate Node API s
 3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with only the Render service origin, such as `https://your-service.onrender.com` (no path and no trailing slash). Do not use `https://giphy.com`, `https://api.giphy.com`, or include `VITE_API_URL=` in the value; this app requires the separate Node proxy to keep the GIPHY key private.
 4. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
 
-The workflow intentionally fails if `VITE_API_URL` is missing, to avoid publishing a site whose search cannot work. If the GitHub Pages owner/repository changes, update the build base in `package.json` and `ALLOWED_ORIGIN` in `render.yaml`.
+If the GitHub Pages owner/repository changes, update the build base in `package.json` and `ALLOWED_ORIGIN` in `render.yaml`.
