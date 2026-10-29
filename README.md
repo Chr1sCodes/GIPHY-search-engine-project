@@ -33,3 +33,7 @@ GitHub Pages serves static files only. The site therefore needs a separate Node 
 4. Push to `main` or run the **Deploy GitHub Pages** workflow. It builds the app with the correct repository subpath and publishes `dist`.
 
 The Pages workflow intentionally stops with a clear error if `VITE_API_URL` is not configured. The Render service allows browser API calls only from this repository's GitHub Pages origin. If the repository owner or name changes, update `ALLOWED_ORIGIN` in `render.yaml` and the Pages build base in `package.json`.
+
+## Project overview
+
+Loop is a website for finding GIFs and still images by keyword, powered by the GIPHY API. It is built with React, TypeScript, Vite, and a Node.js API proxy. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
