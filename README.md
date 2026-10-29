@@ -9,11 +9,11 @@ Requires Node.js 22.9 or later.
 ```sh
 npm install
 cp .env.example .env
-# Set GIPHY_API_KEY in .env
+# Put your private GIPHY_API_KEY in .env.local (it overrides .env and is ignored by Git)
 npm run dev
 ```
 
-Open http://localhost:3000. Keep `.env` out of version control. The API key stays on the server; the browser uses `/api/giphy`.
+Open http://localhost:3000. Keep `.env` and `.env.local` out of version control. The API key stays on the Node server; the browser calls the server proxy at `/api/giphy` and never receives the key.
 
 ```sh
 npm run build
@@ -32,7 +32,7 @@ Loop is a static HTML and JavaScript website for finding GIFs and still images b
 GitHub Pages hosts static files only, so search also needs a separate Node API service. The included Render Blueprint hosts that API; keep the GIPHY key in Render and never in the frontend or GitHub Pages.
 
 1. In GitHub, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
-2. In Render, create a Blueprint from this repository using `render.yaml`. Set `GIPHY_API_KEY` as a secret when prompted and deploy. Copy the service URL, for example `https://loop-giphy-api.onrender.com`.
+2. In Render, create a Blueprint from this repository using `render.yaml`. Set `GIPHY_API_KEY` as a secret when prompted and deploy. Copy the service URL shown by Render; do not assume the example service name is already deployed.
 3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with that full Render service URL (no trailing slash).
 4. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
 
