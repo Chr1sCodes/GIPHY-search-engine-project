@@ -46,11 +46,15 @@ function App() {
   const [favorites, setFavorites] = useState<Media[]>(readFavorites);
   const [savedView, setSavedView] = useState(false);
   const [selected, setSelected] = useState<Media | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountMessage, setAccountMessage] = useState('');
   const [toast, setToast] = useState('');
   const [retry, setRetry] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const accountDialogRef = useRef<HTMLDialogElement>(null);
+  const previousAccountFocus = useRef<HTMLElement | null>(null);
   const pageAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -96,6 +100,29 @@ function App() {
     }
     return () => { document.body.style.overflow = ''; };
   }, [selected]);
+
+  useEffect(() => {
+    if (accountOpen) {
+      previousAccountFocus.current = document.activeElement as HTMLElement;
+      accountDialogRef.current?.showModal();
+      document.body.style.overflow = 'hidden';
+    } else {
+      accountDialogRef.current?.close();
+      document.body.style.overflow = '';
+      previousAccountFocus.current?.focus();
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [accountOpen]);
+
+  function submitAccountForm(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    if (formData.get('password') !== formData.get('confirm-password')) {
+      setAccountMessage('Those passwords don’t match. Please check and try again.');
+      return;
+    }
+    setAccountMessage('This form is a preview. Account creation is not connected yet, and nothing was sent or saved.');
+  }
 
   function runSearch(value: string) {
     setQuery(value);
@@ -160,7 +187,7 @@ function App() {
           <button className={!savedView ? 'nav-active' : ''} onClick={() => { setSavedView(false); runSearch(''); }}>Explore</button>
           <button className={savedView ? 'nav-active' : ''} onClick={() => setSavedView(true)}>Favorites {favorites.length > 0 && <span className="favorite-count">{favorites.length}</span>}</button>
         </nav>
-        <div className="header-right"><span className="powered">POWERED BY <b>GIPHY</b><span className="giphy-mark" /></span><span className="header-divider" /><button className="saved-button" onClick={() => setSavedView(true)}><Heart size={16} /> Your collection</button><span className="avatar">Y<span /></span></div>
+        <div className="header-right"><span className="powered">POWERED BY <b>GIPHY</b><span className="giphy-mark" /></span><span className="header-divider" /><button className="saved-button" onClick={() => setSavedView(true)}><Heart size={16} /> Your collection</button><button className="avatar" aria-label="Create an account" onClick={() => { setAccountMessage(''); setAccountOpen(true); }}>Y<span /></button></div>
       </header>
 
       <main>
@@ -212,6 +239,26 @@ function App() {
         </section>
       </main>
       <footer><a className="brand footer-brand" href="/"><InfinityIcon size={25} />loop.</a><span>Less typing. More feeling.</span><span className="footer-credit">Made for the way you feel. <span>✳</span> Powered by <b>GIPHY</b></span></footer>
+      <dialog ref={accountDialogRef} className="preview-modal account-modal" aria-labelledby="account-title" onCancel={() => setAccountOpen(false)} onClick={event => { if (event.target === event.currentTarget) setAccountOpen(false); }}>
+        <div className="modal-heading"><span><Sparkles size={16} /> A little more you</span><button aria-label="Close account form" onClick={() => setAccountOpen(false)}><X size={21} /></button></div>
+        <div className="account-content">
+          <h2 id="account-title">Create your account</h2>
+          <p className="account-intro">Save the moments you love and keep your favorites close.</p>
+          <p className="account-notice">Preview only: account creation isn’t connected. Don’t use a real password; nothing is sent or saved.</p>
+          <form className="account-form" onSubmit={submitAccountForm}>
+            <label htmlFor="account-name">Your name</label>
+            <input id="account-name" name="name" type="text" autoComplete="name" maxLength={80} required />
+            <label htmlFor="account-email">Email address</label>
+            <input id="account-email" name="email" type="email" autoComplete="email" required />
+            <label htmlFor="account-password">Password</label>
+            <input id="account-password" name="password" type="password" autoComplete="new-password" minLength={8} required />
+            <label htmlFor="account-confirm-password">Confirm password</label>
+            <input id="account-confirm-password" name="confirm-password" type="password" autoComplete="new-password" minLength={8} required />
+            <button type="submit" className="account-submit">Create account <ArrowRight size={17} /></button>
+            {accountMessage && <p className="account-message" role="status">{accountMessage}</p>}
+          </form>
+        </div>
+      </dialog>
       <dialog ref={dialogRef} className="preview-modal" onCancel={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) setSelected(null); }}>
         {selected && <><div className="modal-heading"><span><Sparkles size={16} /> A moment, on loop</span><button aria-label="Close preview" onClick={() => setSelected(null)}><X size={21} /></button></div><div className={`preview-image ${kind === 'stickers' ? 'transparent-preview' : ''}`}><img src={mediaUrl(selected, true)} alt={selected.title || 'GIF preview'} /></div><div className="modal-info"><h2>{selected.title || 'Your next perfect reaction'}</h2><p>by {selected.user?.display_name || selected.username || 'GIPHY'}</p><div className="modal-actions"><button onClick={() => toggleFavorite(selected)}><Heart size={17} fill={favorites.some(item => item.id === selected.id) ? 'currentColor' : 'none'} />{favorites.some(item => item.id === selected.id) ? 'Saved' : 'Save favorite'}</button><button onClick={() => void copyLink(selected)}><Copy size={17} /> Copy link</button><a href={selected.url} target="_blank" rel="noreferrer">GIPHY <ExternalLink size={15} /></a></div></div></>}
       </dialog>
