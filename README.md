@@ -4,7 +4,7 @@ A responsive GIPHY explorer for GIFs, stickers, and still images. Includes trend
 
 ## Run locally
 
-Requires Node.js 22 or later.
+Requires Node.js 22.9 or later.
 
 ```sh
 npm install
@@ -26,3 +26,14 @@ Images are GIPHY GIF still frames, not a separate stock-photo search. All upstre
 ## Project overview
 
 Loop is a website for finding GIFs and still images by keyword, powered by the GIPHY API. It is built with React, TypeScript, Vite, and a Node.js API proxy. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
+
+## Deploy to GitHub Pages
+
+GitHub Pages hosts static files only, so search also needs a separate Node API service. The included Render Blueprint hosts that API; keep the GIPHY key in Render and never in the frontend or GitHub Pages.
+
+1. In GitHub, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
+2. In Render, create a Blueprint from this repository using `render.yaml`. Set `GIPHY_API_KEY` as a secret when prompted and deploy. Copy the service URL, for example `https://loop-giphy-api.onrender.com`.
+3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with that full Render service URL (no trailing slash).
+4. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
+
+The workflow intentionally fails if `VITE_API_URL` is missing, to avoid publishing a site whose search cannot work. If the GitHub Pages owner/repository changes, update the build base in `package.json` and `ALLOWED_ORIGIN` in `render.yaml`.

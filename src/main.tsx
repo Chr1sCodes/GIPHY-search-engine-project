@@ -14,6 +14,7 @@ type Media = {
 type Kind = 'gifs' | 'stickers' | 'images';
 type ApiResult = { data: Media[]; pagination: { offset: number; count: number; total_count: number }; error?: string };
 const suggestions = ['Happy dance', 'Mind blown', 'Good vibes', 'Cats being cats', 'You got this', 'Weekend mood'];
+const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const categories = [
   { title: 'The reaction says it all.', label: 'REACTIONS', query: 'reactions', color: 'pink', icon: '✳', text: 'Every feeling. One GIF.' },
   { title: 'A little weird. Very you.', label: 'INTERNET CULTURE', query: 'funny memes', color: 'green', icon: '☺', text: 'Fresh from your feed.' },
@@ -66,7 +67,7 @@ function App() {
     setItems([]);
     setHasMore(false);
     const params = new URLSearchParams({ q: search, type: kind === 'stickers' ? 'stickers' : 'gifs' });
-    fetch(`/api/giphy?${params}`, { signal: controller.signal })
+    fetch(`${apiBaseUrl}/api/giphy?${params}`, { signal: controller.signal })
       .then(async response => {
         const result: ApiResult = await response.json();
         if (!response.ok) throw new Error(result.error || 'Something went wrong. Please try again.');
@@ -151,7 +152,7 @@ function App() {
     setLoadingMore(true);
     setError('');
     try {
-      const response = await fetch(`/api/giphy?${new URLSearchParams({ q: search, type: kind === 'stickers' ? 'stickers' : 'gifs', offset: String(offset) })}`, { signal: controller.signal });
+      const response = await fetch(`${apiBaseUrl}/api/giphy?${new URLSearchParams({ q: search, type: kind === 'stickers' ? 'stickers' : 'gifs', offset: String(offset) })}`, { signal: controller.signal });
       const result: ApiResult = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not load more results.');
       setItems(previous => [...previous, ...result.data.filter(item => !previous.some(existing => existing.id === item.id))]);
