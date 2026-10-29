@@ -1,0 +1,24 @@
+# Loop
+
+A responsive GIPHY explorer for GIFs, stickers, and still images. Includes trending content, search, paginated results, previews, copyable media links, and favorites stored on your device.
+
+## Run locally
+
+Requires Node.js 22 or later.
+
+```sh
+npm install
+cp .env.example .env
+# Set GIPHY_API_KEY in .env
+npm run dev
+```
+
+Open http://localhost:3000. The supplied development environment already has a local `.env`. Never commit it. The API key stays on the server; the browser uses `/api/giphy`.
+
+```sh
+npm run build
+npm start
+npm test
+```
+
+Images are GIPHY GIF still frames, not a separate stock-photo search. All upstream requests use a PG-13 rating ceiling. Favorites are saved to this browser, not an account. A valid GIPHY API key with access to trending and search endpoints is required; API authorization and rate-limit errors appear explicitly in the app.
