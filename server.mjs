@@ -13,19 +13,6 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', 'http://localhost');
   if (url.pathname === '/api/giphy') {
-    const allowedOrigin = process.env.ALLOWED_ORIGIN;
-    if (allowedOrigin && req.headers.origin === allowedOrigin) {
-      res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-      res.setHeader('Vary', 'Origin');
-    }
-    if (req.method === 'OPTIONS') {
-      if (allowedOrigin && req.headers.origin !== allowedOrigin) {
-        res.writeHead(403);
-        return res.end();
-      }
-      res.writeHead(204, { Allow: 'GET, OPTIONS', 'Access-Control-Allow-Methods': 'GET, OPTIONS' });
-      return res.end();
-    }
     if (req.method !== 'GET') {
       res.writeHead(405, { Allow: 'GET' });
       return res.end();
