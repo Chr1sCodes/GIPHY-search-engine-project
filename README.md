@@ -25,7 +25,7 @@ Images are GIPHY GIF still frames, not a separate stock-photo search. All upstre
 
 ## Project overview
 
-Loop is a website for finding GIFs and still images by keyword, powered by the GIPHY API. It is built with React, TypeScript, Vite, and a Node.js API proxy. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
+Loop is a static HTML and JavaScript website for finding GIFs and still images by keyword, built with Vite and backed by a Node.js GIPHY API proxy. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
 
 ## Deploy to GitHub Pages
 
