@@ -25,11 +25,11 @@ function apiConfigurationError() {
   if (!apiBaseUrl) return 'Search is not configured. Set VITE_API_URL to the URL of your deployed Node API service.';
   try {
     const url = new URL(apiBaseUrl);
-    if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
-      return 'VITE_API_URL must be the HTTPS origin of your API service only, with no path or query string.';
-    }
     if (['giphy.com', 'www.giphy.com', 'api.giphy.com'].includes(url.hostname)) {
-      return 'VITE_API_URL must point to your deployed Node API proxy, not the GIPHY website or API. Deploy the proxy and use its service URL.';
+      return 'VITE_API_URL is set to GIPHY directly. It must be your deployed Node API proxy URL (for example, your Render service URL), which keeps the API key private.';
+    }
+    if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
+      return 'VITE_API_URL must be the HTTPS origin of your deployed Node API proxy only, with no path or query string.';
     }
   } catch {
     return 'VITE_API_URL must be a valid HTTPS URL for your deployed Node API service.';
