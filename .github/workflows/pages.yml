@@ -25,6 +25,22 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Validate API service URL
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: |
+          node --input-type=module <<'NODE'
+          const value = process.env.VITE_API_URL?.trim().replace(/^VITE_API_URL=/i, '');
+          if (!value) throw new Error('Set the repository Actions variable VITE_API_URL to your deployed Node API service origin.');
+          let url;
+          try { url = new URL(value); } catch { throw new Error('VITE_API_URL must be a valid HTTPS URL.'); }
+          if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
+            throw new Error('VITE_API_URL must be an HTTPS service origin only, with no path/query. Example: https://your-service.onrender.com');
+          }
+          if (['giphy.com', 'www.giphy.com', 'api.giphy.com'].includes(url.hostname)) {
+            throw new Error('VITE_API_URL must point to your deployed Node API proxy, not GIPHY itself.');
+          }
+          NODE
       - name: Install dependencies
         run: npm ci
       - name: Build site

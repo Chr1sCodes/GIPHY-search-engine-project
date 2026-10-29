@@ -33,7 +33,7 @@ GitHub Pages hosts static files only, so search also needs a separate Node API s
 
 1. In GitHub, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
 2. In Render, create a Blueprint from this repository using `render.yaml`. Set `GIPHY_API_KEY` as a secret when prompted and deploy. Copy the service URL shown by Render; do not assume the example service name is already deployed.
-3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with that full Render service URL (no trailing slash).
+3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with only the Render service origin, such as `https://your-service.onrender.com` (no path and no trailing slash). Do not use `https://giphy.com`, `https://api.giphy.com`, or include `VITE_API_URL=` in the value; this app requires the separate Node proxy to keep the GIPHY key private.
 4. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
 
 The workflow intentionally fails if `VITE_API_URL` is missing, to avoid publishing a site whose search cannot work. If the GitHub Pages owner/repository changes, update the build base in `package.json` and `ALLOWED_ORIGIN` in `render.yaml`.

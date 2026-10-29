@@ -13,13 +13,41 @@ type Media = {
 };
 type Kind = 'gifs' | 'stickers' | 'images';
 type ApiResult = { data: Media[]; pagination: { offset: number; count: number; total_count: number }; error?: string };
-const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const apiBaseUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/^VITE_API_URL=/i, '').replace(/\/$/, '');
 const suggestions = ['Happy dance', 'Mind blown', 'Good vibes', 'Cats being cats', 'You got this', 'Weekend mood'];
 const categories = [
   { title: 'The reaction says it all.', label: 'REACTIONS', query: 'reactions', color: 'pink', icon: '✳', text: 'Every feeling. One GIF.' },
   { title: 'A little weird. Very you.', label: 'INTERNET CULTURE', query: 'funny memes', color: 'green', icon: '☺', text: 'Fresh from your feed.' },
   { title: 'Send some good energy.', label: 'GOOD VIBES', query: 'good vibes', color: 'purple', icon: '✧', text: 'Make their day, on loop.' },
 ];
+
+function apiConfigurationError() {
+  if (!apiBaseUrl) return 'Search is not configured. Set VITE_API_URL to the URL of your deployed Node API service.';
+  try {
+    const url = new URL(apiBaseUrl);
+    if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
+      return 'VITE_API_URL must be the HTTPS origin of your API service only, with no path or query string.';
+    }
+    if (['giphy.com', 'www.giphy.com', 'api.giphy.com'].includes(url.hostname)) {
+      return 'VITE_API_URL must point to your deployed Node API proxy, not the GIPHY website or API. Deploy the proxy and use its service URL.';
+    }
+  } catch {
+    return 'VITE_API_URL must be a valid HTTPS URL for your deployed Node API service.';
+  }
+  return '';
+}
+
+async function parseApiResult(response: Response): Promise<ApiResult> {
+  const body = await response.text();
+  try {
+    return JSON.parse(body) as ApiResult;
+  } catch {
+    if (body.trimStart().startsWith('<')) {
+      throw new Error('The configured API URL returned an HTML page instead of JSON. Set VITE_API_URL to your deployed Node API service origin, not a website URL.');
+    }
+    throw new Error('The API returned an invalid response. Check that VITE_API_URL points to your running Node API service.');
+  }
+}
 
 function readFavorites(): Media[] {
   try {
@@ -59,6 +87,13 @@ function App() {
   const pageAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    const configurationError = apiConfigurationError();
+    if (configurationError) {
+      setLoading(false);
+      setError(configurationError);
+      setItems([]);
+      return;
+    }
     pageAbort.current?.abort();
     const controller = new AbortController();
     setLoading(true);
@@ -69,7 +104,7 @@ function App() {
     const params = new URLSearchParams({ q: search, type: kind === 'stickers' ? 'stickers' : 'gifs' });
     fetch(`${apiBaseUrl}/api/giphy?${params}`, { signal: controller.signal })
       .then(async response => {
-        const result: ApiResult = await response.json();
+        const result = await parseApiResult(response);
         if (!response.ok) throw new Error(result.error || 'Something went wrong. Please try again.');
         return result;
       })
@@ -147,6 +182,11 @@ function App() {
 
   async function loadMore() {
     if (loadingMore) return;
+    const configurationError = apiConfigurationError();
+    if (configurationError) {
+      setError(configurationError);
+      return;
+    }
     const controller = new AbortController();
     pageAbort.current = controller;
     setLoadingMore(true);
@@ -154,7 +194,7 @@ function App() {
     try {
       const params = new URLSearchParams({ q: search, type: kind === 'stickers' ? 'stickers' : 'gifs', offset: String(offset) });
       const response = await fetch(`${apiBaseUrl}/api/giphy?${params}`, { signal: controller.signal });
-      const result: ApiResult = await response.json();
+      const result = await parseApiResult(response);
       if (!response.ok) throw new Error(result.error || 'Could not load more results.');
       setItems(previous => [...previous, ...result.data.filter(item => !previous.some(existing => existing.id === item.id))]);
       setOffset(result.pagination.offset + result.pagination.count);
