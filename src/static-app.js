@@ -101,6 +101,12 @@ function render() {
 
 async function loadResults(loadMore = false) {
   if (state.savedView) return render();
+  if (import.meta.env.PROD && !apiBase) {
+    state.loading = false;
+    state.error = 'Search is not connected yet. Configure the VITE_API_URL GitHub Actions variable to enable GIF search.';
+    render();
+    return;
+  }
   state.controller?.abort();
   const controller = new AbortController();
   state.controller = controller;
