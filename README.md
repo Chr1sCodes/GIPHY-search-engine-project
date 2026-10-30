@@ -36,3 +36,9 @@ GitHub Pages hosts the static site. The API key is injected at build time and is
 3. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
 
 To deploy on Render instead, create a Blueprint from this repository using `render.yaml` and set `VITE_GIPHY_API_KEY` when prompted. If the GitHub Pages owner/repository changes, update the build base in `package.json`.
+
+### GIFs missing and buttons not responding
+
+If the deployed page requests `/src/static-app.js` and receives a 404, GitHub Pages is serving the source HTML instead of the Vite build. Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**, then run **Actions → Deploy GitHub Pages → Run workflow** on `main`. Do not deploy the repository root from a branch: it contains Vite source files, not a standalone website. The workflow uploads only the built `dist` directory and checks both the Pages source setting and API key before publishing.
+
+After deployment, the page should load JavaScript and CSS from `/GIPHY-search-engine-project/assets/`. If the app runs but displays an API-key or authorization error, verify the `GIPHY_API_KEY` Actions secret and run the workflow again; changing the secret alone does not rebuild the site.

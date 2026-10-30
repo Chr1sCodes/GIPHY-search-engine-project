@@ -20,6 +20,14 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Verify Pages deployment source
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pages } = await github.rest.repos.getPages(context.repo);
+            if (pages.build_type !== 'workflow') {
+              core.setFailed('Set Settings > Pages > Build and deployment > Source to GitHub Actions. Branch-based deployment publishes unbuilt source files and overwrites this workflow.');
+            }
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,7 +38,12 @@ jobs:
       - name: Build site
         env:
           VITE_GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
-        run: npm run build:pages
+        run: |
+          if [ -z "$VITE_GIPHY_API_KEY" ]; then
+            echo "::error::Add the GIPHY_API_KEY repository Actions secret before deploying."
+            exit 1
+          fi
+          npm run build:pages
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
