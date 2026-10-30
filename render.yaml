@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: loop-giphy-api
+    name: loop-giphy-site
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev && npm run build
@@ -8,7 +8,5 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22.23.4
-      - key: ALLOWED_ORIGIN
-        value: https://chr1scodes.github.io
-      - key: GIPHY_API_KEY
+      - key: VITE_GIPHY_API_KEY
         sync: false

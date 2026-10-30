@@ -1,6 +1,7 @@
 import './styles.css';
+import { buildGiphyUrl } from '../api.mjs';
 
-const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const apiKey = import.meta.env.VITE_GIPHY_API_KEY || '';
 const suggestions = ['Happy dance', 'Mind blown', 'Good vibes', 'Cats being cats', 'You got this', 'Weekend mood'];
 const $ = selector => document.querySelector(selector);
 const state = { query: '', kind: 'gifs', items: [], offset: 0, hasMore: false, loading: false, loadingMore: false, error: '', favorites: readFavorites(), savedView: false, controller: null, toastTimer: null };
@@ -101,9 +102,9 @@ function render() {
 
 async function loadResults(loadMore = false) {
   if (state.savedView) return render();
-  if (import.meta.env.PROD && !apiBase) {
+  if (!apiKey) {
     state.loading = false;
-    state.error = 'Search is not connected yet. Configure the VITE_API_URL GitHub Actions variable to enable GIF search.';
+    state.error = 'Search is not connected yet. Configure VITE_GIPHY_API_KEY for your local or production build.';
     render();
     return;
   }
@@ -119,12 +120,26 @@ async function loadResults(loadMore = false) {
     state.hasMore = false;
   }
   render();
-  const params = new URLSearchParams({ q: state.query, type: state.kind === 'stickers' ? 'stickers' : 'gifs' });
-  if (loadMore) params.set('offset', String(state.offset));
   try {
-    const response = await fetch(`${apiBase}/api/giphy?${params}`, { signal: controller.signal });
+    const url = buildGiphyUrl({
+      apiKey,
+      query: state.query,
+      type: state.kind === 'stickers' ? 'stickers' : 'gifs',
+      offset: loadMore ? state.offset : 0,
+    });
+    const response = await fetch(url, { signal: controller.signal });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Something went wrong. Please try again.');
+    if (!response.ok) {
+      const error = response.status === 429
+        ? 'GIPHY is getting a lot of requests. Please try again in a moment.'
+        : response.status === 401 || response.status === 403
+          ? 'GIPHY could not authorize this API key. Check your API key and its access in the GIPHY developer dashboard.'
+          : result.meta?.msg || 'GIPHY is unavailable right now. Please try again.';
+      throw new Error(error);
+    }
+    if (!Array.isArray(result.data) || !result.pagination) {
+      throw new Error('GIPHY returned an unexpected response. Please try again.');
+    }
     if (controller.signal.aborted) return;
     state.items = loadMore ? [...state.items, ...result.data.filter(item => !state.items.some(old => old.id === item.id))] : result.data;
     state.offset = result.pagination.offset + result.pagination.count;

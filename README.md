@@ -9,11 +9,11 @@ Requires Node.js 22.9 or later.
 ```sh
 npm install
 cp .env.example .env
-# Set GIPHY_API_KEY in .env
+# Set VITE_GIPHY_API_KEY in .env
 npm run dev
 ```
 
-Open http://localhost:3000. Keep `.env` out of version control. The API key stays on the server; the browser uses `/api/giphy`.
+Open http://localhost:3000. Keep `.env` out of version control. Requests go directly from the browser to GIPHY's GIF/sticker trending and search endpoints, as required by GIPHY. Because a browser must send the API key, it is visible to site visitors in the built JavaScript; keep it out of source control and use a key intended for this client-side application.
 
 ```sh
 npm run build
@@ -25,15 +25,14 @@ Images are GIPHY GIF still frames, not a separate stock-photo search. All upstre
 
 ## Project overview
 
-Loop is a static HTML and JavaScript website for finding GIFs and still images by keyword, built with Vite and backed by a Node.js GIPHY API proxy. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
+Loop is a static HTML and JavaScript website for finding GIFs and still images by keyword, built with Vite. GIPHY API requests are made directly by the browser. The account form is currently a UI preview only; account creation and subscriptions require a future authentication backend.
 
 ## Deploy to GitHub Pages
 
-GitHub Pages hosts static files only, so search also needs a separate Node API service. The included Render Blueprint hosts that API; keep the GIPHY key in Render and never in the frontend or GitHub Pages.
+GitHub Pages hosts the static site. The API key is injected at build time and is included in the public client bundle because GIPHY API requests must come directly from the browser.
 
 1. In GitHub, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
-2. In Render, create a Blueprint from this repository using `render.yaml`. Set `GIPHY_API_KEY` as a secret when prompted and deploy. Copy the service URL shown by Render; do not assume the example service name is already deployed.
-3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` with only the Render service origin, such as `https://your-service.onrender.com` (no path and no trailing slash). Do not use `https://giphy.com`, `https://api.giphy.com`, or include `VITE_API_URL=` in the value; this app requires the separate Node proxy to keep the GIPHY key private.
-4. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
+2. In GitHub, open **Settings → Secrets and variables → Actions → Secrets** and add `GIPHY_API_KEY`. The Pages workflow passes it to Vite as `VITE_GIPHY_API_KEY` during the build. The generated JavaScript is public, so this secret only protects the key from source control; it does not hide it from site visitors.
+3. Push to `main` or run **Deploy GitHub Pages** from the Actions tab. The workflow builds the site under the repository path and publishes `dist`.
 
-If the GitHub Pages owner/repository changes, update the build base in `package.json` and `ALLOWED_ORIGIN` in `render.yaml`.
+To deploy on Render instead, create a Blueprint from this repository using `render.yaml` and set `VITE_GIPHY_API_KEY` when prompted. If the GitHub Pages owner/repository changes, update the build base in `package.json`.
